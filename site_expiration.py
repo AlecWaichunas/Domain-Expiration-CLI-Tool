@@ -8,17 +8,26 @@ RDAP_LOOPUP_URI = "https://rdap.verisign.com/com/v1/domain/"
 # takes website url as argument
 # prints expiration date to console
 def main(argv):
-    website = argv[1].lower()
-    # TODO check for invalid characters
-    if website is None or not type(website) is str:
+    # check valid domain
+    if len(argv) == 1 or (not type(argv[1]) is str):
         print("Usage: " + argv[0] + " [DOMAIN NAME] ")
+        return
+    website = argv[1].lower()
     # clean up url
     if website.startswith("www."):
         website = website[5:]
     # request data
     try:
-        data = urllib.request.urlopen(RDAP_LOOPUP_URI + website).read()
-        print(data)
+        data = str(urllib.request.urlopen(RDAP_LOOPUP_URI + website).read())
+        # sort data out
+        lookup_str = "{\"eventAction\":\"expiration\",\"eventDate\":\""
+        experiation = data.find(lookup_str)
+        # check if expiration found
+        if experiation == -1:
+            print("Expiration was not found for " + website)
+            return
+        #print expiration
+        print(data[experiation + len(lookup_str): experiation + len(lookup_str) + 20])
     except urllib.error.HTTPError:
         print("Domain Name not found in the registry.")
 
